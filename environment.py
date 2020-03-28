@@ -11,7 +11,7 @@ setup = {
 
 database = {
     'host':setup['host'],
-    'port':5517,
-    'dbname':'smartTrash',
+    'port':27017,
+    'dbname':'smarttrash',
     'gestor':'mongodb'
 }

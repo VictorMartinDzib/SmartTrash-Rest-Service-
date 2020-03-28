@@ -8,10 +8,10 @@ verify_ssl = true
 [packages]
 flask = "*"
 flask-restful = "*"
-pymongo = "*"
 marshmallow = "*"
-bson = "*"
 flask-pymongo = "*"
+pymongo = "*"
+bcrypt = "*"
 
 [requires]
 python_version = "3.8"
