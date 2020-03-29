@@ -1,15 +1,11 @@
-from flask import Flask, request
-from flask_restful import Api, Resource
+from flask import request
+from flask_restful import Resource
 from marshmallow import Schema
-from environment import database
-from flask_pymongo import PyMongo
-from models.SchemasTrashes import UserSchema
-from functions import forms, hash
+from applicaction.models.SchemasTrashes import UserSchema
+from applicaction.functions import forms, hash
 from bson import ObjectId
 from secrets import token_hex
-
-''' This is the app config tha allows control the application '''
-
+from applicaction import mongo, api, app
 
 #Default route
 @app.route('/')
@@ -65,7 +61,8 @@ class UserWithTrashesById(Resource):
         response = ""
         if token_validation(str(user)):
             try:
-                if(data := mongo.db.users_with_trashes.find_one({"_id": ObjectId(id)})):
+                data = mongo.db.users_with_trashes.find_one({"_id": ObjectId(id)})
+                if(data):
                     schema = UserSchema()
                     response = {
                         "message": "Access to resource was permited",
@@ -143,7 +140,8 @@ class AuthenticationLogout(Resource):
         set = {'$set':newToken}
         
         try:
-            if (update :=  mongo.db.users_with_trashes.update_one({"_id":ObjectId(id)}, set)):
+            update = mongo.db.users_with_trashes.update_one({"_id": ObjectId(id)}, set)
+            if (update):
                 return {"message":"You have unlogged successfull", "status": 202}
             else:
                 return {"message": "Probably not there is an active session", "status":404}
@@ -156,8 +154,8 @@ class AuthenticationRegister(Resource):
             return "register"
 
 # These are the api resources url  
-api.add_resource(UserWithTrashes, '/user_with_trashes/<user>')
-api.add_resource(UserWithTrashesById, '/user_with_trashes/<user>/<id>')
-api.add_resource(AuthenticationLog, '/authentication/log')
-api.add_resource(AuthenticationLogout, '/authentication/logout/<id>')
-api.add_resource(AuthenticationRegister, '/authentication/register')
+api.add_resource(UserWithTrashes, '/service/user_with_trashes/<user>')
+api.add_resource(UserWithTrashesById, '/service/user_with_trashes/<user>/<id>')
+api.add_resource(AuthenticationLog, '/service/authentication/log')
+api.add_resource(AuthenticationLogout, '/service/authentication/logout/<id>')
+api.add_resource(AuthenticationRegister, '/service/authentication/register')

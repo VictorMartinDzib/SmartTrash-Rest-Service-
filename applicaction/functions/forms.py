@@ -1,6 +1,6 @@
 
 from flask import request
-from functions.hash import encryptPassword
+from applicaction.functions.hash import encryptPassword
 from secrets import token_hex
 
 
