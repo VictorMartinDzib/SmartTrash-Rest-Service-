@@ -19,7 +19,7 @@ def createFormDataUser():
                   "address" : request.form.get('address'),
                   "email" : request.form.get('email'),
                   "password" : encryptPassword(request.form.get('password')),
-                  "token" : str(token_hex(16)),
+                  "token" : str(token_hex(32)),
                   "status" : 1,
                   "role" : request.form.get('role'),
                   "active" : 1,
