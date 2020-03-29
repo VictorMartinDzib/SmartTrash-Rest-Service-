@@ -1,7 +1,7 @@
 ''' author: Victor Alejandro Martin Dzib '''
-import environment
-from api import app
-from flask_pymongo import PyMongo
+#import environment
+#from api import app
+#from flask_pymongo import PyMongo
 
 from flask import Flask
 app = Flask(__name__)
