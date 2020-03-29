@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return 'Servicio para el monitoreo de basureros inteligentes'
+    return 'Servicio para el monitoreo de basureros inteligentes, estoy cambiando esto alv'
 
 #if __name__ == '__main__':
     #app.run()
