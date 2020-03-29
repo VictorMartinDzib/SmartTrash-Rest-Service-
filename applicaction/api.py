@@ -9,10 +9,7 @@ from bson import ObjectId
 from secrets import token_hex
 
 ''' This is the app config tha allows control the application '''
-app = Flask(__name__)
-app.config["MONGO_URI"] = "mongodb://"+ database['host'] +":"+str(database['port']) +"/" + database['dbname']
-api = Api(app)
-mongo = PyMongo(app)
+
 
 #Default route
 @app.route('/')
