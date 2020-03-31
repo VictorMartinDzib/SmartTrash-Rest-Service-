@@ -7,9 +7,16 @@ from bson import ObjectId
 from secrets import token_hex
 from applicaction import mongo, api, app
 
+defaultFirebaseRoute = "https://smarttrash-6587f.firebaseio.com/database"
+
 #Default route
 @app.route('/')
 def index():
+
+    #user_data = mongo.db.users_with_trashes.find({})
+    #schema = UserSchema()
+    #return format_response(user_data, schema)
+
     return 'Servicio para el monitoreo de basureros inteligentes'
 
 '''
@@ -20,78 +27,146 @@ def format_response(object, schema):
     return [schema.dump(doc) for doc in object]
 
 '''
-    Valida que el token este enlazado con un usuario en la bd
+    * Database token validation
 '''
+
+
 def token_validation(token):
     return True if mongo.db.users_with_trashes.find_one({'token':token}) else False
+
 '''
     * Class to get User resources after that the user is logged
 '''
 class UserWithTrashes(Resource):
 
-    def get(self, user):
-
-        
-        user_data = mongo.db.users_with_trashes.find({})
-        schema = UserSchema()
-        return format_response(user_data, schema)
-
-    def post(self, user):
-          
-        if request.method == 'POST':
-            
-            data=forms.createFormDataUser()
-            print(data[1])
-            if(data[0]):
-                print(data[1])
-                store = mongo.db.users_with_trashes.insert_one(data[1]).inserted_id    
-            else:
-                return {'message':'It Could not insert the data, Reintent later',
-                        'status':404}
-        return {"message":"The data was inserted successfull",
-                "status": 200}
-
-
-'''
-    * Class to get User an specifi resource by ID
-'''
-class UserWithTrashesById(Resource):
-
-    def get(self, user, id):
+    #Get all user info
+    def get(self, token, id_user):
         response = ""
-        if token_validation(str(user)):
+        if token_validation(str(token)):
             try:
-                data = mongo.db.users_with_trashes.find_one({"_id": ObjectId(id)})
-                if(data):
+                data = mongo.db.users_with_trashes.find_one({"_id": ObjectId(id_user)})
+                if (data):
                     schema = UserSchema()
                     response = {
                         "message": "Access to resource was permited",
-                        "status":200,
-                        "data":schema.dump(data)
+                        "status": 200,
+                        "data": schema.dump(data)
                     }
                 else:
                     response = {
                         "message": "The id is not referenced with no user",
-                        "status":403,
-                        "data":[]
+                        "status": 403,
+                        "data": []
                     }
             except:
                 response = {
-                        "message": "Invalid format Id",
-                        "status":403,
-                        "data":[]
-                    }
+                    "message": "Invalid format Id",
+                    "status": 403,
+                    "data": []
+                }
         else:
-            response = {"message":"You access token is invalid, It's probabliy that you have not permisson to access or your access token has expired, please register an account to access to this resourse or contact to email: contact@smarttrash.com", "status":403}
+            response = {
+                "message": "You access token is invalid, It's probabliy that you have not permisson to access or your access token has expired, please register an account to access to this resourse or contact to email: contact@smarttrash.com",
+                "status": 403
+            }
+
         return response
 
-    def put(self, user, id):
+    #  Save a new trash
+    def post(self, token, id_user):
+
+        response = None
+        if token_validation(token):
+            if request.method == 'POST':
+
+                name = request.form.get('name')
+
+                new_trash = {
+                    "name": name,
+                    "percent_fill": 0,
+                    "realtime_db_url": defaultFirebaseRoute + "/user"+ str(id_user)+"/"+name,
+                    "status": 1,
+                    "uses": 0,
+                    "filled": 0,
+                    "message": "El basurero esta vacio",
+                    "active": 1
+                }
+
+                #updating user
+                user = mongo.db.users_with_trashes.find_one({"_id":ObjectId(id_user)})
+                user['firebase_collection_url'] = defaultFirebaseRoute + "/user" + str(id_user)
+                set = {"$set":user}
+                update = mongo.db.users_with_trashes.update_one({"_id":ObjectId(id_user)}, set)
+
+                push = {"$push":{"trashes":new_trash}}
+                save = mongo.db.users_with_trashes.update_one({"_id":ObjectId(id_user)}, push)
+                response = {"message":"Trash inserted successfully", "status":200}
+        else:
+            response = {
+                "message": "You access token is invalid, It's probabliy that you have not permisson to access or your access token has expired, please register an account to access to this resourse or contact to email: contact@smarttrash.com",
+                "status": 403
+            }
+        return response
+
+    #   Edit user data
+    def put(self, token, id_user):
+
+        response = None
+        if token_validation(token):
+            if request.method == 'PUT':
+                user = mongo.db.users_with_trashes.find_one({'_id':ObjectId(id_user)})
+                data = forms.updateFormDataUser(user)
+                if data[0]:
+                    set = {'$set': data[1]}
+                    update = mongo.db.users_with_trashes.update_one({'_id':ObjectId(id_user)}, set)
+                    response = {'message':'User data was updated successfully', 'status':200}
+                else:
+                    response = {'message':'User was not updated :(', 'status':404}
+        else:
+            response = { "message": "You access token is invalid, It's probabliy that you have not permisson to access or your access token has expired, please register an account to access to this resourse or contact to email: contact@smarttrash.com",
+                "status": 403}
+
+        return response
+
+'''
+    * Class to get a user specific resource by ID
+'''
+class UserWithTrashesById(Resource):
+
+    def get(self, token, id_user, id_trash):
+
+        response = None
+        if token_validation(token):
+
+            try:
+                trash = mongo.db.users_with_trashes.find_one({"_id":ObjectId(id_user)},
+                            {"trashes":{"$elemMatch":{"name":str(id_trash)}}})
+
+                response = {
+                    "message": "Trash found",
+                    "status":200,
+                    "data": trash['trashes'][0]
+                }
+            except:
+                response = {
+                    "message": "Trash not found :(",
+                    "status": 200,
+                    "data": {}
+                }
+        else:
+            print("err")
+            response = {
+                "message": "You access token is invalid, It's probabliy that you have not permisson to access or your access token has expired, please register an account to access to this resourse or contact to email: contact@smarttrash.com",
+                "status": 403}
+        return response
+
+    def put(self, token, id_user, id_trash):
         return "put request"
 
-    def patch(self,user, id):
+    def patch(self,token, id_user, id_trash):
         return "patch request"
 
-    def delete(self, user, id):
+    def delete(self, token, id_user, id_trash):
         return "delete request"
 
 '''
@@ -133,7 +208,6 @@ class AuthenticationLog(Resource):
         return response
       
 class AuthenticationLogout(Resource):
-
     def get(self, id):
         response = ""
         newToken = {"token":str(token_hex(32))}
@@ -150,12 +224,32 @@ class AuthenticationLogout(Resource):
 
 class AuthenticationRegister(Resource):
 
-      def post(self):
-            return "register"
+    def post(self):
+
+        response = None
+        if request.method == 'POST':
+
+            data = forms.createFormDataUser()
+            print(data[1])
+            if (data[0]):
+                print(data[1])
+                store = mongo.db.users_with_trashes.insert_one(data[1]).inserted_id
+
+                response = {
+                "message": "The data was inserted successfull",
+                "status": 200
+                }
+            else:
+                response = {
+                    'message': 'It Could not insert the data, Reintent later',
+                    'status': 404
+                }
+
+        return response
 
 # These are the api resources url  
-api.add_resource(UserWithTrashes, '/service/user_with_trashes/<user>')
-api.add_resource(UserWithTrashesById, '/service/user_with_trashes/<user>/<id>')
+api.add_resource(UserWithTrashes, '/service/user_with_trashes/<token>/<id_user>')
+api.add_resource(UserWithTrashesById, '/service/user_with_trashes/<token>/<id_user>/<id_trash>')
 api.add_resource(AuthenticationLog, '/service/authentication/log')
 api.add_resource(AuthenticationLogout, '/service/authentication/logout/<id>')
 api.add_resource(AuthenticationRegister, '/service/authentication/register')

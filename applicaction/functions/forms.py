@@ -33,4 +33,23 @@ def createFormDataUser():
 
             return (False, {'error':'Invalid params'})
 
+def updateFormDataUser(data):
+
+    try:
+        data["name"] = request.form.get('name');
+        data["lastname"]= request.form.get('lastname');
+        data["company"] = request.form.get('company');
+        data["country"] = request.form.get('country');
+        data["state"] = request.form.get('state');
+        data["city"] = request.form.get('city');
+        data["zip_code"] = int(request.form.get('zip_code'));
+        data["address"] = request.form.get('address');
+
+        return (True,data)
+
+    except:
+        data = {"error": "Invalid params"}
+        return (False, data)
+    #data["password"] = encryptPassword(request.form.get('password'));
+
 
