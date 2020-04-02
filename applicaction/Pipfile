@@ -12,6 +12,7 @@ marshmallow = "*"
 flask-pymongo = "*"
 pymongo = "*"
 bcrypt = "*"
+flask-cors = "*"
 
 [requires]
 python_version = "3.6"

@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "a067feaf86ce85e4cd6690fc359c174713461ba2e3f669cfb9750e291880b677"
+            "sha256": "84ebc70241ecde45f92e79da38478aaeac01af3a8cdfe6865bdb41ecb03a9ea6"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -94,6 +94,14 @@
             ],
             "index": "Servicio para el sistema de basureros inteligentes",
             "version": "==1.1.1"
+        },
+        "flask-cors": {
+            "hashes": [
+                "sha256:72170423eb4612f0847318afff8c247b38bd516b7737adfc10d1c2cdbb382d16",
+                "sha256:f4d97201660e6bbcff2d89d082b5b6d31abee04b1b3003ee073a6fd25ad1d69a"
+            ],
+            "index": "Servicio para el sistema de basureros inteligentes",
+            "version": "==3.0.8"
         },
         "flask-pymongo": {
             "hashes": [
@@ -253,10 +261,10 @@
         },
         "werkzeug": {
             "hashes": [
-                "sha256:169ba8a33788476292d04186ab33b01d6add475033dfc07215e6d219cc077096",
-                "sha256:6dc65cf9091cf750012f56f2cad759fa9e879f511b5ff8685e456b4e3bf90d16"
+                "sha256:2de2a5db0baeae7b2d2664949077c2ac63fbd16d98da0ff71837f7d1dea3fd43",
+                "sha256:6c80b1e5ad3665290ea39320b91e1be1e0d5f60652b964a3070216de83d2e47c"
             ],
-            "version": "==1.0.0"
+            "version": "==1.0.1"
         }
     },
     "develop": {}
